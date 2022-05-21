@@ -1,11 +1,12 @@
 package controllers
 
 import (
-    "URL-Sort/Backend/database"
+    "Backend/database"
     "net/http"
-    "log"
+    // "log"
     "strings"
-    "github.com/google/uuid"
+    "math/rand"
+    // "github.com/google/uuid"
     "github.com/gin-gonic/gin"
 )
 
@@ -21,22 +22,37 @@ func GetRedirect(c *gin.Context) {
 func SetURL(c *gin.Context) {
     var response InsertBody
     c.Bind(&response)
-    uuid, err := uuid.NewUUID()
-    if err != nil {
-        log.Fatal(err)
-    }
+    uuid := randomString(5)
+    // if err != nil {
+    //     log.Fatal(err)
+    // }
     var save_url []URL_Sortend
     urlcheck := response.URL
-    if !strings.HasPrefix(response.URL, "http://") {
-        urlcheck = strings.Join([]string{"http://", response.URL}, "")
+    if !strings.HasPrefix(response.URL, "http") {
+        urlcheck = strings.Join([]string{"http", response.URL}, "")
     }
-    save_url = append(save_url, URL_Sortend{uuid.String(), response.ExpireAt, urlcheck,})
+    save_url = append(save_url, URL_Sortend{uuid, response.ExpireAt, urlcheck,})
     db.Table("URL_Shortener").Save(&save_url)
     ip := c.ClientIP()
-    SortURL := "http://" + ip + ":8687/" + uuid.String()
-    ReturnSortURL := Return_url{uuid.String(), SortURL,}
+    SortURL := "http://" + ip + ":8687/" + uuid
+    ReturnSortURL := Return_url{uuid, SortURL,}
     c.JSON(http.StatusOK, ReturnSortURL)
 }
+func randomInt(min, max int) int {
+    return min + rand.Intn(max-min)
+    }
+func randomString(l int) string {
+    bytes := make([]byte, l)
+    for i := 0; i < l; i++ {
+    bytes[i] = byte(randomInt(65, 90))
+    }
+    var Id string
+    db.Select("Id").Table("URL_Shortener").Where("Id = ?", string(bytes)).Scan(&Id)
+    if Id == string(bytes) {
+        return randomString(l)
+    }
+    return string(bytes)
+    }
 
 type Return_url struct {
     Id string `json:"id"`

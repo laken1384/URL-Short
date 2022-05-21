@@ -11,7 +11,7 @@ import (
 const (
 	UserName     string = "root"
 	Password     string = "admin"
-	Addr         string = "127.0.0.1"
+	Addr         string = "34.136.77.251"
 	Port         int    = 3306
 	Database     string = "URL"
 	MaxLifetime  int    = 10
